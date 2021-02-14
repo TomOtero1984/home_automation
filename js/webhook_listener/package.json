@@ -1,0 +1,11 @@
+{
+  "name": "webhook_listener",
+  "version": "1.0.0",
+  "description": "webhook listener",
+  "main": "index.js",
+  "scripts": {
+    "test": "console.log(\"hello world!\")"
+  },
+  "author": "",
+  "license": "ISC"
+}
