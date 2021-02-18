@@ -1,10 +1,13 @@
-/*
-Program for testing the Parallax High Speed Servo
-*/
+//
+//
+// Program for testing the Parallax High Speed Servo
+//
+//
 
 
-
+/* ### Models ### */
 typedef struct _pwm{
+    int pin_out;    //OUTPUT
     int refresh_rate;
     float forward_rate;
     float backward_rate;
@@ -14,12 +17,15 @@ typedef struct _pwm{
     unsigned long time_curr;
 } _pwm;
 
-//Global
+/* ### Globals ### */
 _pwm pulse;
 
+
+/* ### Main ### */
 void setup(void)
 {
     init_pulse(&pulse);
+    pinMode(pulse.pin_out,OUTPUT);
 }
 
 
@@ -32,6 +38,7 @@ void loop(void)
 
 void init_pulse(_pwm* pulse)
 {     
+    pulse->pin_out = 13;
     pulse->count = 0;
     pulse->time_start = 0;
     pulse->time_curr = 0;
@@ -53,34 +60,17 @@ void _wait_pulse_duration(_pwm* pulse, int dur)
     }
 }
 
+/* ### Motor Control Functions ### */
 
-void forward(_pwm* pulse, int dur)
+void move(_pwm* pulse, int dir_rate)
 {
-    // pin low
+    // Arguments
+    // pulse: pointer to pulse struct
+    // dir_rate: amount of time to wait to define the direction
+
+    digitalWrite(pulse->pin_out,LOW);
     _wait_pulse_duration(pulse,pulse->refresh_rate);
-    // pin high
-    _wait_pulse_duration(pulse,pulse->forward_rate);
-    // pin low    
-}
-
-
-void backward(_pwm* pulse, int dur)
-{
-    _wait_pulse_duration(pulse,pulse->refresh_rate);
-    _wait_pulse_duration(pulse,pulse->backward_rate);    
-}
-
-
-void stall(_pwm* pulse, int dur)
-{
-    _wait_pulse_duration(pulse,pulse->refresh_rate);
-    _wait_pulse_duration(pulse,pulse->stall_rate);    
-}
-
-
-void pulse_on(_pwm* pulse)
-{
-    // Set pin high
-    // Call wait_pulse_duration
-    // Set pin low
+    digitalWrite(pulse->pin_out,HIGH);
+    _wait_pulse_duration(pulse,dir_rate);
+    digitalWrite(pulse->pin_out,LOW);
 }
