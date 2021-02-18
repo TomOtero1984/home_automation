@@ -1,11 +1,7 @@
-//
-//
 // Program for testing the Parallax High Speed Servo
-//
-//
 
 
-/* ### Models ### */
+/* ### Header ###*/
 typedef struct _pwm{
     int pin_out;    //OUTPUT
     int refresh_rate;
@@ -17,6 +13,7 @@ typedef struct _pwm{
     unsigned long time_curr;
 } _pwm;
 
+
 /* ### Globals ### */
 _pwm pulse;
 
@@ -24,6 +21,7 @@ _pwm pulse;
 /* ### Main ### */
 void setup(void)
 {
+    Serial.begin(115200);
     init_pulse(&pulse);
     pinMode(pulse.pin_out,OUTPUT);
 }
@@ -31,7 +29,7 @@ void setup(void)
 
 void loop(void)
 {
-    _wait_pulse_duration(&pulse, pulse.refresh_rate);
+
 
 }
 
@@ -61,7 +59,6 @@ void _wait_pulse_duration(_pwm* pulse, int dur)
 }
 
 /* ### Motor Control Functions ### */
-
 void move(_pwm* pulse, int dir_rate)
 {
     // Arguments
