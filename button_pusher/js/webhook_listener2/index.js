@@ -23,7 +23,7 @@ app.use(bodyParser.json());
 app.post('/', function(req, res) {
     console.log('receiving data ...');
     console.log('body is ',req.body);
-    res.send(req.body);
+    res.send(req.body + req.body);
 });
 
 // var server = app.listen(port, function () {
