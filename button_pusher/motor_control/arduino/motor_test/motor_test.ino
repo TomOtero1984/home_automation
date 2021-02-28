@@ -2,7 +2,7 @@
 
 
 /* ### Header ###*/
-typedef struct _pwm{
+typedef struct _pwm {
     int pin_out;    //OUTPUT
     int refresh_rate;
     float forward_rate;
@@ -13,21 +13,20 @@ typedef struct _pwm{
     unsigned long time_curr;
 } _pwm;
 
-
 /* ### Globals ### */
 _pwm pulse;
 
-
 /* ### Main ### */
-void setup(void)
-{ 
+void setup(void) { 
     Serial.begin(115200);
     init_pulse(&pulse);
     pinMode(pulse.pin_out,OUTPUT);
     int prog_flag = 1;
     char input = 'x';
     bool input_flag = false;
-    while (prog_flag){
+    bool motor_start_flag = false;
+    while (prog_flag) {
+
         Serial.flush();
 //        move_test3(&pulse);
 //        move_test2(&pulse);
@@ -39,42 +38,35 @@ void setup(void)
         Serial.println("Continue?");
         Serial.println("Input(y/n): ");      
         input_flag = false;
-        while (!input_flag)
-        {
-            if (Serial.available() > 0)
-            {
+        while (!input_flag) {
+            if (Serial.available() > 0) {
                 input = Serial.read();
-                if (input == 'y' || input == 'n')
-                    {
+                if (input == 'y' || input == 'n') {
                       input_flag = true;
                     }
             }
         }
-        if (input == 'n')
-        {
+        if (input == 'n') {
             prog_flag = 0;
         }
     }
     Serial.println("END");
 }
 
-void loop(void)
-{
+void loop(void) {
 //  print_micros();
   
 
 }
 
-void print_micros()
-{
+void print_micros() {
     Serial.print("Time: ");
     Serial.print(micros());
     Serial.print("\n");
 }
 
 
-void init_pulse(_pwm* pulse)
-{     
+void init_pulse(_pwm* pulse) {     
     pulse->pin_out = 8;
     pulse->count = 0;
     pulse->time_start = 0;
@@ -86,8 +78,7 @@ void init_pulse(_pwm* pulse)
 }
 
 
-void _wait_pulse_duration(_pwm* pulse, int dur)
-{
+void _wait_pulse_duration(_pwm* pulse, int dur) {
     int delta = 0;
     unsigned long time_curr = 0;
     unsigned long time_start = micros();
@@ -112,28 +103,23 @@ void move(_pwm* pulse, int dir_rate)
 
 }
 
-void move_test(_pwm* pulse, char dir)
-{
+void move_test(_pwm* pulse, char dir) {
     bool moving = true;
     unsigned long start_time = millis();
     unsigned long curr_time = 0;
     unsigned long delta = 0;
     int stop_time = 5000;
-    while (moving)
-    {
+    while (moving) {
         curr_time = millis();
         delta = curr_time - start_time;
-        if (delta >= stop_time)
-        {
+        if (delta >= stop_time) {
             moving = false;
             break;
         }
-        if (dir == 'f')
-        {
+        if (dir == 'f') {
             move(pulse, pulse->forward_rate);  
         }
-        else if (dir == 'b')
-        { 
+        else if (dir == 'b') { 
           move(pulse, pulse->backward_rate);
         }
         
@@ -141,8 +127,7 @@ void move_test(_pwm* pulse, char dir)
 }
 
 
-void move_test2(_pwm* pulse)
-{
+void move_test2(_pwm* pulse) {
     Serial.println("Moving forward");
     analogWrite(pulse->pin_out,20);
     delay(5000);
@@ -153,29 +138,76 @@ void move_test2(_pwm* pulse)
 }
 
 
-void move_test3(_pwm* pulse)
-{
-  for (int i = 0; i<=200; i++)
-  {
+void move_test3(_pwm* pulse) {
+  for (int i = 0; i<=200; i++) {
     digitalWrite(pulse->pin_out, HIGH);
     delay(1.25);
     digitalWrite(pulse->pin_out, LOW);
     delay(18.75);
   }
   
-  for (int i = 0; i<=200; i++)
-  {
+  for (int i = 0; i<=200; i++) {
     digitalWrite(pulse->pin_out, HIGH);
     delay(1.5);
     digitalWrite(pulse->pin_out, LOW);
     delay(18.5);
   }
   
-  for (int i = 0; i<=200; i++)
-  {
+  for (int i = 0; i<=200; i++) {
     digitalWrite(pulse->pin_out, HIGH);
     delay(1.75);
     digitalWrite(pulse->pin_out, LOW);
     delay(18.25);
   }
+}
+
+
+void get_user_input(){
+    // parsing input
+    bool str_start_flag = false;
+    bool str_end_flag = false;
+    char start_str[] = "<<start>>";
+    char ser_in[255];
+    char buffer[4];
+    int ser_in_pos = 0;
+    while(!str_end_flag) {
+        // Find start of packet
+        // if(!str_start_flag && Serial.readBytes(buffer,2) >= 2) {
+        //     if(strcmp(buffer,"<<")) {
+        //         for(int i; i++; strlen(buffer)){
+        //             ser_in[ser_in_pos + i] = buffer[i];                    
+        //         }
+        //         ser_in_pos = strlen(ser_in);
+        //         str_start_flag = true;
+        //     }
+        // }
+        _get_serial(&str_start_flag, 2, start_str, buffer, &ser_in_pos, ser_in);
+
+
+        // Find packet content
+
+        // Find end of packet
+        // if(!str_start_flag && Serial.readBytes(buffer,2) >= 2) {
+        //     if(strcmp(buffer,">>")) {
+        //         for(int i; i++; strlen(buffer)){
+        //             ser_in[ser_in_pos + i] = buffer[i];                    
+        //         }
+        //         ser_in_pos = strlen(ser_in);
+        //         str_start_flag = true;
+        //     }
+        // }
+
+    }
+}
+
+void _find_pat_serial(bool* flag, int length, char* pat, char* buffer, int* ser_in_pos, char* ser_in){
+    if(!flag && Serial.readBytes(buffer,length) >= length) {
+        if(strcmp(buffer, pat)) {
+            for(int i; i++; strlen(buffer)){
+                ser_in[*ser_in_pos + i] = buffer[i];                    
+            }
+            *ser_in_pos = strlen(ser_in);
+            *flag = true;
+        }
+    }
 }
