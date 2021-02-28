@@ -25,30 +25,45 @@ void setup(void) {
     char input = 'x';
     bool input_flag = false;
     bool motor_start_flag = false;
+    bool demo_mode = false;
     while (prog_flag) {
+        if (!demo_mode) {
+            // Wait for start flag
 
-        Serial.flush();
-//        move_test3(&pulse);
-//        move_test2(&pulse);
-        Serial.println("Moving forward for 5 second");
-        move_test(&pulse,'f');
-        delay(1000);
-        Serial.println("Moving backward for 5 second");
-        move_test(&pulse,'b');
-        Serial.println("Continue?");
-        Serial.println("Input(y/n): ");      
-        input_flag = false;
-        while (!input_flag) {
-            if (Serial.available() > 0) {
-                input = Serial.read();
-                if (input == 'y' || input == 'n') {
-                      input_flag = true;
+            // Move the actuator
+
+            // Send end flag
+        }
+        else {
+            Serial.flush();
+            //        move_test3(&pulse);
+            //        move_test2(&pulse);
+            Serial.println("Moving forward for 5 second");
+            move_test(&pulse, 'f');
+            delay(1000);
+            Serial.println("Moving backward for 5 second");
+            move_test(&pulse, 'b');
+            // Send end response
+            Serial.println("Continue?");
+            Serial.println("Input(y/n): ");
+            input_flag = false;
+            while (!input_flag)
+            {
+                if (Serial.available() > 0)
+                {
+                    input = Serial.read();
+                    if (input == 'y' || input == 'n')
+                    {
+                        input_flag = true;
                     }
+                }
+            }
+            if (input == 'n')
+            {
+                prog_flag = 0;
             }
         }
-        if (input == 'n') {
-            prog_flag = 0;
-        }
+
     }
     Serial.println("END");
 }
@@ -65,7 +80,6 @@ void print_micros() {
     Serial.print("\n");
 }
 
-
 void init_pulse(_pwm* pulse) {     
     pulse->pin_out = 8;
     pulse->count = 0;
@@ -76,7 +90,6 @@ void init_pulse(_pwm* pulse) {
     pulse->backward_rate = 1350; // us
     pulse->stall_rate = 1520;   // us
 }
-
 
 void _wait_pulse_duration(_pwm* pulse, int dur) {
     int delta = 0;
@@ -126,7 +139,6 @@ void move_test(_pwm* pulse, char dir) {
     }
 }
 
-
 void move_test2(_pwm* pulse) {
     Serial.println("Moving forward");
     analogWrite(pulse->pin_out,20);
@@ -136,7 +148,6 @@ void move_test2(_pwm* pulse) {
     delay(5000);
     analogWrite(pulse->pin_out, 0);
 }
-
 
 void move_test3(_pwm* pulse) {
   for (int i = 0; i<=200; i++) {
@@ -160,7 +171,6 @@ void move_test3(_pwm* pulse) {
     delay(18.25);
   }
 }
-
 
 void get_user_input(){
     // parsing input
@@ -209,5 +219,35 @@ void _find_pat_serial(bool* flag, int length, char* pat, char* buffer, int* ser_
             *ser_in_pos = strlen(ser_in);
             *flag = true;
         }
+    }
+}
+
+void _detect_start_command(){
+    bool start_flag = false;
+    bool end_flag = false;
+    bool reading = false;
+    char str_in[255] = "";
+    int str_in_cur_pos = 0;
+    char buffer[16] = "";
+    char pattern_start[3] = "<<";
+    char pattern_end[3] = ">>";
+
+    // Loop to detect start flag
+    while(!start_flag){
+        Serial.readBytes(buffer,1);
+        if(!reading && strlen(buffer)>=2){
+            if(strstr(pattern_start,buffer)){
+                start_flag = true;
+            }
+        }
+    }
+    // Write buffer to str_in and clear buffer
+    for(int i; i++; strlen(buffer)){
+        str_in[str_in_cur_pos] = buffer[i];
+        str_in_cur_pos++;
+    }
+    // Loop to detect end flag
+    while(!end_flag){
+        
     }
 }
