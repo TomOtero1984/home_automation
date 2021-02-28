@@ -1,5 +1,7 @@
 // Program for testing the Parallax High Speed Servo
 
+#include <string.h>
+#include <Arduino.h>
 
 /* ### Header ###*/
 typedef struct _pwm {
@@ -191,7 +193,7 @@ void get_user_input(){
         //         str_start_flag = true;
         //     }
         // }
-        _get_serial(&str_start_flag, 2, start_str, buffer, &ser_in_pos, ser_in);
+        // _get_serial(&str_start_flag, 2, start_str, buffer, &ser_in_pos, ser_in);
 
 
         // Find packet content
@@ -210,44 +212,40 @@ void get_user_input(){
     }
 }
 
-void _find_pat_serial(bool* flag, int length, char* pat, char* buffer, int* ser_in_pos, char* ser_in){
-    if(!flag && Serial.readBytes(buffer,length) >= length) {
-        if(strcmp(buffer, pat)) {
-            for(int i; i++; strlen(buffer)){
-                ser_in[*ser_in_pos + i] = buffer[i];                    
-            }
-            *ser_in_pos = strlen(ser_in);
-            *flag = true;
-        }
-    }
-}
+void _detect_start_command(char* str_in){
+/*
+    Parses serial data formatted using opening and closing curly brackets.
+    The data inside the curly brackets is concat to str_in
 
-void _detect_start_command(){
+    Example: "{start}"
+
+    Parameters:
+        char* str_in
+*/
     bool start_flag = false;
     bool end_flag = false;
     bool reading = false;
-    char str_in[255] = "";
-    int str_in_cur_pos = 0;
+    // char str_in[255] = "";
+    int str_in_cur_pos = strlen(str_in);
     char buffer[16] = "";
-    char pattern_start[3] = "<<";
-    char pattern_end[3] = ">>";
+    char pattern_start[3] = "{";
+    char pattern_end[3] = "}";
 
     // Loop to detect start flag
-    while(!start_flag){
+    while(reading){
         Serial.readBytes(buffer,1);
-        if(!reading && strlen(buffer)>=2){
-            if(strstr(pattern_start,buffer)){
-                start_flag = true;
-            }
+        if(start_flag == true){
+            strcat(str_in,buffer);
         }
-    }
-    // Write buffer to str_in and clear buffer
-    for(int i; i++; strlen(buffer)){
-        str_in[str_in_cur_pos] = buffer[i];
-        str_in_cur_pos++;
-    }
-    // Loop to detect end flag
-    while(!end_flag){
-        
+        else if(strcmp(buffer,pattern_start)){
+            strcpy(buffer,"");
+            start_flag = true;
+        }
+        else if(strcmp(buffer,pattern_end)){
+            strcpy(buffer,"");
+            end_flag = true;
+            reading = false;
+            break;
+        }
     }
 }
