@@ -28,13 +28,20 @@ void setup(void) {
     bool input_flag = false;
     bool motor_start_flag = false;
     bool demo_mode = false;
+    char *str_in = "";
+    char *msg = "{'arduino':'done'}";
     while (prog_flag) {
         if (!demo_mode) {
             // Wait for start flag
-
+            read_serial(str_in);
             // Move the actuator
-
+            Serial.println("{'arduino':'Moving forward for 5 second'}");
+            move_test(&pulse, 'f');
+            delay(1000);
+            Serial.println("{'arduino':'Moving backward for 5 second'}");
+            move_test(&pulse, 'b');
             // Send end flag
+            Serial.write(msg);
         }
         else {
             Serial.flush();
@@ -49,37 +56,23 @@ void setup(void) {
             Serial.println("Continue?");
             Serial.println("Input(y/n): ");
             input_flag = false;
-            while (!input_flag)
-            {
-                if (Serial.available() > 0)
-                {
+            while (!input_flag){
+                if (Serial.available() > 0){
                     input = Serial.read();
-                    if (input == 'y' || input == 'n')
-                    {
+                    if (input == 'y' || input == 'n'){
                         input_flag = true;
                     }
                 }
             }
-            if (input == 'n')
-            {
+            if (input == 'n'){
                 prog_flag = 0;
             }
         }
-
     }
     Serial.println("END");
 }
 
 void loop(void) {
-//  print_micros();
-  
-
-}
-
-void print_micros() {
-    Serial.print("Time: ");
-    Serial.print(micros());
-    Serial.print("\n");
 }
 
 void init_pulse(_pwm* pulse) {     
@@ -174,45 +167,7 @@ void move_test3(_pwm* pulse) {
   }
 }
 
-void get_user_input(){
-    // parsing input
-    bool str_start_flag = false;
-    bool str_end_flag = false;
-    char start_str[] = "<<start>>";
-    char ser_in[255];
-    char buffer[4];
-    int ser_in_pos = 0;
-    while(!str_end_flag) {
-        // Find start of packet
-        // if(!str_start_flag && Serial.readBytes(buffer,2) >= 2) {
-        //     if(strcmp(buffer,"<<")) {
-        //         for(int i; i++; strlen(buffer)){
-        //             ser_in[ser_in_pos + i] = buffer[i];                    
-        //         }
-        //         ser_in_pos = strlen(ser_in);
-        //         str_start_flag = true;
-        //     }
-        // }
-        // _get_serial(&str_start_flag, 2, start_str, buffer, &ser_in_pos, ser_in);
-
-
-        // Find packet content
-
-        // Find end of packet
-        // if(!str_start_flag && Serial.readBytes(buffer,2) >= 2) {
-        //     if(strcmp(buffer,">>")) {
-        //         for(int i; i++; strlen(buffer)){
-        //             ser_in[ser_in_pos + i] = buffer[i];                    
-        //         }
-        //         ser_in_pos = strlen(ser_in);
-        //         str_start_flag = true;
-        //     }
-        // }
-
-    }
-}
-
-void _detect_start_command(char* str_in){
+void read_serial(char* str_in){
 /*
     Parses serial data formatted using opening and closing curly brackets.
     The data inside the curly brackets is concat to str_in
@@ -230,7 +185,6 @@ void _detect_start_command(char* str_in){
     char buffer[16] = "";
     char pattern_start[3] = "{";
     char pattern_end[3] = "}";
-
     // Loop to detect start flag
     while(reading){
         Serial.readBytes(buffer,1);
