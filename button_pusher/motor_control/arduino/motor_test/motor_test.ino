@@ -40,7 +40,7 @@ void setup(void) {
             Serial.println("{'arduino':'Moving backward for 5 second'}");
             move_test(&pulse, 'b');
             // Send end flag
-            Serial.write(msg);
+            Serial.println(msg);
         }
         else {
             Serial.flush();

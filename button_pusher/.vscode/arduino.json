@@ -1,5 +1,0 @@
-{
-    "programmer": "AVR ISP",
-    "board": "arduino:avr:uno",
-    "sketch": "motor_control\\arduino\\motor_test\\motor_test.ino"
-}
