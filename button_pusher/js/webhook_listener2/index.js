@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const axios = require('axios');
 const util = require('util');
+const SerialPort = require('serialport');
 
 
 
@@ -13,13 +14,42 @@ async function getVersion(m_name,res) {
     return stdout;
 }
 
+async function serial_setup(arduino){
+    await arduino.device_lookup();
+    arduino.serialport = new SerialPort(arduino.path,arduino.baudrate);
+    arduino.serialport.pipe(arduino.parser);
+    arduino.serialport.on('open', showPortOpen);
+    arduino.parser.on('data', readSerialData);
+    arduino.serialport.on('close', showPortClose);
+    arduino.serialport.on('error', showError);
+
+}
+
+function showPortOpen() {
+    console.log('port open. Data rate: ' + arduino.baudrate);
+  }
+   
+function readSerialData(data) {
+    console.log(data);
+}
+
+function showPortClose() {
+    console.log('port closed.');
+}
+
+function showError(error) {
+    console.log('Serial port error: ' + error);
+}
+
 
 class Arduino {
-    constructor(path){
+    constructor(path, baudrate){
         this.path = path;
+        this.baudrate = baudrate;
+        this.serialport;
+        this.parser;
     }
 
-    // Methods
     async device_lookup() {
         try {
             const { stdout, stderr } = await exec('$HOME/device_lookup');
@@ -49,15 +79,18 @@ class Arduino {
 const execFile = util.promisify(require('child_process').execFile);
 const exec = util.promisify(require('child_process').exec);
 
-// Find Arduino Port 
-let arduino = new Arduino(path="");
-arduino.device_lookup();
+// Arduino Communication Setup
+let arduino = new Arduino(path="",baudrate=115200);
+let Readline = SerialPort.parsers.Readline;
+arduino.parser = new Readline();
+serial_setup(arduino);
 
-// SerialPort Setup
-const serialport = new SerialPort(arduino.path)
+// Serial Events
+
+
 
 // Express Setup
-var app = express()
+var app = express();
 var port = 3000;
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -69,12 +102,12 @@ app.post('/', function(req, res) {
     m_name = req.body["name"];
     m_status = req.body["status"];
     if (m_name == 'RPi' && m_status == 'running'){
-        getVersion(m_name,res)
-        const msg = '{"msg": "recieved"}'
-        res.json(msg)
-        mongo_res = `{"name":"${m_name}","status":"ready"}`
+        getVersion(m_name,res);
+        const msg = '{"msg": "recieved"}';
+        res.json(msg);
+        mongo_res = `{"name":"${m_name}","status":"ready"}`;
         console.log(mongo_res);
-        axios.put(mongo_url, mongo_res)
+        axios.put(mongo_url, mongo_res);
     }
 });
 app.get('/node-version', async function(req, res) {
