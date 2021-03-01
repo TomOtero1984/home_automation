@@ -1,7 +1,6 @@
 // Program for testing the Parallax High Speed Servo
 
 #include <string.h>
-#include <Arduino.h>
 
 /* ### Header ###*/
 typedef struct _pwm {
