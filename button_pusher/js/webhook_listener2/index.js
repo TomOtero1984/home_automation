@@ -105,6 +105,7 @@ app.post('/', function(req, res) {
         getVersion(m_name,res);
         const msg = '{"msg": "recieved"}';
         res.json(msg);
+        arduino.serialport.write('start')
         mongo_res = `{"name":"${m_name}","status":"ready"}`;
         console.log(mongo_res);
         axios.put(mongo_url, mongo_res);
