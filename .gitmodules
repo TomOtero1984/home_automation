@@ -1,0 +1,3 @@
+[submodule "home_status_app"]
+	path = home_status_app
+	url = ./home_status_app
